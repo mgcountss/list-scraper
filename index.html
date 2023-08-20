@@ -1,0 +1,84 @@
+<h1>YT Scraper Bot</h1>
+<p>Scrapes YouTube channels from the YouTube search results.</p>
+<p>It will scrape 150 channels and then send them to the API.</p>
+<hr>
+<div>
+    <center>
+        <h2>Channels</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); width: 100%;">
+            <h1 id="total">Total Scraped: 0</h1>
+            <h1 id="batch">Batch Scraped: 0/150</h1>
+            <h1 id="sent">Added Requests: 0</h1>
+            <h1 id="newTotal">New Scraped: 0</h1>
+        </div>
+        <div id="channels"></div>
+    </center>
+</div>
+<script src="./words.js"></script>
+<script>
+    let ids = [];
+    let allIds = [];
+    let total = 0;
+    let newTotal = 0;
+    let batch = 0;
+    let sent = 0;
+    const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const randomString = (length) => {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += words[randomNumber(0, words.length - 1)] + " ";
+        }
+        return result;
+    };
+
+    async function search() {
+        if (ids.length > 150) {
+            fetch("https://list.mgcounts.com/api/addBulk", {
+                "headers": {
+                    "Content-Type": "application/json",
+                },
+                "body": JSON.stringify({
+                    "ids": ids
+                }),
+                "method": "POST",
+                "mode": "cors"
+            });
+            console.log("Sent");
+            ids = [];
+            sent++;
+        }
+        let random = randomString(randomNumber(1, 5));
+        fetch('https://list.mgcounts.com/api/add', {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                id: random
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.channels) {
+                data.channels.forEach((channel) => {
+                    if (allIds.indexOf(channel.id) === -1) {
+                        total++;
+                        allIds.push(channel.id);
+                        if (channel.added == false) {
+                            newTotal++;
+                            ids.push(channel.id);
+                        }
+                    }
+                })
+                batch = ids.length;
+                document.getElementById("total").innerHTML = "Total Scraped: " + total;
+                document.getElementById("newTotal").innerHTML = "New Scraped: " + newTotal;
+                document.getElementById("batch").innerHTML = "Batch Scraped: " + batch + "/150";
+                document.getElementById("sent").innerHTML = "Sent Requests: " + sent;
+            }
+            search();
+        }).catch(err => {
+            console.log(err);
+            search();
+        });
+    };
+    search();
+</script>
