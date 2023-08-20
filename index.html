@@ -1,19 +1,26 @@
-<h1>YT Scraper Bot</h1>
-<p>Scrapes YouTube channels from the YouTube search results.</p>
-<p>It will scrape 150 channels and then send them to the API.</p>
-<hr>
-<div>
-    <center>
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.8em;
+    }
+</style>
+<center>
+    <div>
         <h2>Channels</h2>
+        <h3 id="term"></h3>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); width: 100%;">
             <h1 id="total">Total Scraped: 0</h1>
             <h1 id="batch">Batch Scraped: 0/150</h1>
             <h1 id="sent">Added Requests: 0</h1>
             <h1 id="newTotal">New Scraped: 0</h1>
         </div>
-        <div id="channels"></div>
-    </center>
-</div>
+        <div id="channels" style="display: grid; grid-template-columns: repeat(4, 1fr); width: 100%;"></div>
+    </div>
+    <hr>
+    <h1>YT Scraper Bot</h1>
+    <p>Scrapes YouTube channels from the YouTube search results.</p>
+    <p>It will scrape 150 channels and then send them to the API.</p>
+</center>
 <script src="./words.js"></script>
 <script>
     let ids = [];
@@ -48,6 +55,7 @@
             sent++;
         }
         let random = randomString(randomNumber(1, 5));
+        document.getElementById("term").innerHTML = "Term: " + random;
         fetch('https://list.mgcounts.com/api/add', {
             headers: {
                 'Content-Type': 'application/json'
@@ -65,6 +73,10 @@
                         if (channel.added == false) {
                             newTotal++;
                             ids.push(channel.id);
+                            document.getElementById("channels").innerHTML += `<div style="border: 1px solid black; padding: 10px; margin: 10px;"><h3>${channel.title}</h3><p>${channel.subscribers}</p><a href="https://www.youtube.com/channel/${channel.id}" target="_blank">View Channel</a></div>`;
+                            if (document.getElementById("channels").children.length > 4) {
+                                document.getElementById("channels").removeChild(document.getElementById("channels").children[0]);
+                            }
                         }
                     }
                 })
